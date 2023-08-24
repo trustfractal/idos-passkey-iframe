@@ -8,6 +8,6 @@
 * `dapp` exposes an interface via `postMessage` for `idos-iframe` to return decrypted data
 * **`dapp` never has access to the user password or key**
 
-To test, make sure you're running this in a secure context (https://, not file://), and:
+To test, make sure you're running this in a secure context (`https://`, not `file://`), and:
 1. visit `idos.html` to create a passkey
 2. visit `dapp.html` to use the passkey and observe the message passing
