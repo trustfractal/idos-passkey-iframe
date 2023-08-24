@@ -1,3 +1,11 @@
+const base64ToArrayBuffer = (base64) => (
+  Uint8Array.from(atob(base64), c => c.charCodeAt(0)).buffer
+);
+
+const arrayBufferToBase64 = (bytes) => (
+  btoa(String.fromCharCode(...new Uint8Array(bytes)))
+);
+
 const dappUrl = new URL(document.referrer).origin;
 let password;
 
@@ -32,6 +40,15 @@ window.addEventListener("message", (event) => {
     challenge: crypto.getRandomValues(new Uint8Array(10)),
     //rpId: "idos.network",
   };
+
+  const credentialId = window.localStorage.getItem("idos-credential-id");
+
+  if (credentialId !== null) {
+    publicKey.allowCredentials = [{
+      id: base64ToArrayBuffer(credentialId),
+      type: "public-key",
+    }];
+  }
 
   const credential = await navigator.credentials.get({ publicKey });
   password = new TextDecoder().decode(credential.response.userHandle);

@@ -1,12 +1,29 @@
+const base64ToArrayBuffer = (base64) => (
+  Uint8Array.from(atob(base64), c => c.charCodeAt(0)).buffer
+);
+
+const arrayBufferToBase64 = (bytes) => (
+  btoa(String.fromCharCode(...new Uint8Array(bytes)))
+);
+
 const main = async () => {
   document.querySelector("#passkey").innerText = "checking if one exists...";
 
-  // I don't think there's a way to know if credentials exist
-  // without triggering a browser dialog; this could be confusing
+  const challenge = crypto.getRandomValues(new Uint8Array(10));
+
+  const credentialId = window.localStorage.getItem("idos-credential-id");
+
   try {
     let publicKey = {
-      challenge: crypto.getRandomValues(new Uint8Array(10)),
+      challenge: challenge,
       //rpId: "idos.network",
+    }
+
+    if (credentialId !== null) {
+      publicKey.allowCredentials = [{
+        id: base64ToArrayBuffer(credentialId),
+        type: "public-key",
+      }];
     }
 
     let credential = await navigator.credentials.get({ publicKey });
@@ -30,7 +47,7 @@ const main = async () => {
 
   try {
     publicKey = {
-      challenge: crypto.getRandomValues(new Uint8Array(10)),
+      challenge: challenge,
       rp: {
         // id: "idos.network",
         name: "IDOS",
@@ -44,6 +61,8 @@ const main = async () => {
     };
 
     credential = await navigator.credentials.create({ publicKey });
+
+    window.localStorage.setItem("idos-credential-id", arrayBufferToBase64(credential.rawId));
 
     document.querySelector("#passkey").innerText = "created";
   } catch (e) {
